@@ -5,7 +5,6 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const apiKeyMiddleware = require("../middlewares/apiKeyMiddleware");
 
 const router = express.Router();
-console.log("✅ Auth routes loaded");
 
 router.post("/register", apiKeyMiddleware, registerUser);
 router.post("/login", apiKeyMiddleware, loginUser);
