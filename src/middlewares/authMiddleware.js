@@ -1,21 +1,23 @@
+// src/middlewares/authMiddleware.js
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const { sendResponse } = require("../utils/responseHelper");
 
-const authMiddleware = (req, res, next) => {
-  const authHeader = req.header("Authorization");
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || process.env.ACCESS_TOKEN_SECRET;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ msg: "No token, access denied" });
+module.exports = (req, res, next) => {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return sendResponse(res, false, "No token provided", null, 401);
   }
-
-  const token = authHeader.split(" ")[1]; // ✅ extract actual token
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // store whole user payload (e.g. { id: ... })
+    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+    req.user = { id: decoded.id };
     next();
   } catch (err) {
-    return res.status(401).json({ msg: "Invalid token" });
+    return sendResponse(res, false, "Invalid or expired token", null, 401);
   }
 };
-
-module.exports = authMiddleware;
